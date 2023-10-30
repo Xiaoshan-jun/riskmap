@@ -1,0 +1,97 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Mon May  8 19:02:03 2023
+
+@author: jxiang9143
+"""
+
+# -*- coding: utf-8 -*-
+"""
+Created on Tue May  2 15:38:57 2023
+
+@author: dekom
+"""
+from include.astarastar import aStarSearch
+import time
+import matplotlib.pyplot as plt
+import matplotlib.colors
+import matplotlib.cm as cm
+import numpy as np
+import random
+
+for a in range(8, 13):
+    L1 = 0
+    trainfile = 'train' + str(a) + '.txt'
+    valfile = 'val' + str(a) + '.txt'
+    testfile = 'test' + str(a) + '.txt'
+    with open(trainfile, 'w') as f:
+        for rs in range(0, 100):
+            random.seed(rs)
+            b = a
+            rfactor = 0.05
+            x = round(a*0.25)
+            y = round(a*0.25)
+            width = round(a*0.5)
+            length = round(a*0.5)
+            risk = np.random.rand(a, b)*rfactor/a*5
+            for i in range(x, x + width):
+                for j in range(y , y + length):
+                    if i < len(risk) and j < len(risk[0]):
+                        risk[i][j] = rfactor
+              
+            for i in range(a):
+                risk[0][i] = 0
+                risk[a-1][i] = 0
+                risk[i][b-1] = 0
+            risk = risk.round(2)
+            for i in range(40):
+                x = random.randint(0, a-1)
+                y = random.randint(0, b-1)
+                xG = (x, y)
+                f.write('risk:')
+                np.savetxt(f, risk, fmt='%.2f')
+                f.write('destination:')
+                f.write(str(xG))
+                f.write('\n')
+                f.write('solution:')
+                for x in range(a):
+                    for y in range(b):
+                        xI = (x, y, 1)
+                        Ma = abs(x - xG[0]) + abs(y - xG[1])
+                        safec = 0.9
+                        actionList, path, nodeList, count, explored = aStarSearch(xI,xG, risk, safec)
+                        if path:
+                            f.write(str(len(path)))
+                            f.write(',')
+                            L1 += abs(len(path) - Ma)
+                            # plt.figure(figsize = (8, 8), dpi=100)
+                            # plt.axes()
+                            # for m in range(len(risk)):
+                            #     for n in range(len(risk[0])):
+                            #         my_cmap = cm.get_cmap('Greys')
+                            #         min_val = 0
+                            #         max_val = 0.1
+                            #         norm = matplotlib.colors.Normalize(min_val, max_val)
+                            #         color_i = my_cmap(norm(risk[m][n]))
+                            #         square = plt.Rectangle((m, n), 1, 1, fc=color_i,ec="gray")
+                            #         plt.gca().add_patch(square)
+                            # for p in path:
+                            #     my_cmap = cm.get_cmap('Greys')
+                            #     min_val = 0
+                            #     max_val = 0.1
+                            #     norm = matplotlib.colors.Normalize(min_val, max_val)
+                            #     color_i = my_cmap(norm(risk[m][n]))
+                            #     square = plt.Rectangle((p[0], p[1]), 1, 1, fc=color_i,ec="red", lw = 3)
+                            #     plt.gca().add_patch(square)
+                            # plt.axis('scaled')
+                            # plt.title('searched path from ' + str(xI) + ' to ' + str(xG), fontsize = 20)
+                            # plt.xticks(fontsize=20)
+                            # plt.yticks(fontsize=20)
+                        else:
+                            f.write('N,')
+                f.write('.')
+                f.write('\n')
+                f.write('new')
+        print(str(a) + '-L1:' + str(L1))
+

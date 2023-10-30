@@ -33,7 +33,7 @@ from include.castar import aStarSearch
 #         adj_matrix[i][i-b] = 1 #up
 #     #left side node
 #     for i in range(b, a*b-b, b):
-#         adj_matrix[i][i - b] = 1 #up
+#         adj_matrix[i][i - b] = 1 #uOn an exact method for the constrained shortest path problemp
 #         adj_matrix[i][i + b] = 1 #down
 #         adj_matrix[i][i + 1] = 1 #right
 #     #right

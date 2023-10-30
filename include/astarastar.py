@@ -2,7 +2,7 @@
 """
 Created on Fri Jul 15 01:38:05 2022
 
-the normal a*
+the normal a* with safety constrain
 """
 # ----------------------------Astar Search Algorithm start-----------
 import time
@@ -89,12 +89,12 @@ def aStarSearch(xI,xG, riskMap, safec = 0.9,heuristic='manhattan'):
         count = count + 1
         #print(count)
         if visited._index == 0:
-            print("search failed")
+            #print("search failed")
             return False, False, False, False, False
         currentposition = visited.pop()
         if currentposition[0] == xG[0] and currentposition[1] == xG[1]:
             xG = currentposition
-            print("goal found")
+            #print("goal found")
             break
         explored.append(currentposition)
         current = nodeList[currentposition]
@@ -110,7 +110,7 @@ def aStarSearch(xI,xG, riskMap, safec = 0.9,heuristic='manhattan'):
                     newg = current.g + getCostOfActionsEuclideanDistance(a)
                     if heuristic == 'manhattan':
                         newc = newg + manhattanHeuristic(newposition, xG)
-                    if heuristic == 'euclidean':
+                    if heuristic == 'rfactoreuclidean':
                         newc = newg + euclideanHeuristic(newposition, xG)
                     # check if new node found add to nodeList and pripority queue
                     if newposition not in nodeList:
@@ -136,5 +136,13 @@ def aStarSearch(xI,xG, riskMap, safec = 0.9,heuristic='manhattan'):
         node1 = path[i]
         node2 = path[i + 1]
         action = (node2[0] - node1[0], node2[1] - node1[1])
+        if action == (-1, 0):
+            action = 1
+        elif action == (0, 1):
+            action = 2
+        elif action == (1, 0):
+            action = 3
+        elif action == (0, -1):
+            action = 4
         actionList.append(action)
     return actionList, path, nodeList, count, explored

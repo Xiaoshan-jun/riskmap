@@ -2,7 +2,7 @@
 """
 Created on Fri Jul 15 01:38:05 2022
 
-the normal a*
+3d a*
 """
 # ----------------------------Astar Search Algorithm start-----------
 import time
