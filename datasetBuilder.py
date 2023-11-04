@@ -11,13 +11,12 @@ import matplotlib.pyplot as plt
 import matplotlib.colors
 import matplotlib.cm as cm
 import numpy as np
-import random
 from tqdm import tqdm
-np.random.seed(42) 
+np.random.seed(80) 
 safec = 0.9
 dim = 16
 num_elements = dim * dim
-for i in tqdm(range(45, 100)):
+for i in tqdm(range(1, 1000)):
     #create random risky map
     safeplace = int(0.4 * num_elements)
     lowrisk = int(0.4 * num_elements)
