@@ -14,25 +14,21 @@ import numpy as np
 from tqdm import tqdm
 np.random.seed(80) 
 safec = 0.9
-dim = 16
+dim = 64
 num_elements = dim * dim
-<<<<<<< Updated upstream
 for i in tqdm(range(0, 500)):
-=======
-
-for i in tqdm(range(501, 1000)):
->>>>>>> Stashed changes
     #create random risky map
-    safeplace = int(0.4 * num_elements)
-    lowrisk = int(0.4 * num_elements)
+    safeplace = int(0.5 * num_elements)
+    lowrisk = int(0 * num_elements)
     highrisk = num_elements - lowrisk- safeplace
     values_safeplace = np.random.uniform(0, 0, safeplace)
     values_lowrisk = np.random.uniform(0, 0.05, lowrisk)
-    values_highrisk = np.random.uniform(0.1, 1, highrisk)
+    values_highrisk = np.random.uniform(1, 1, highrisk)
     combined_values = np.concatenate((values_safeplace, values_lowrisk, values_highrisk))
     UAVmap = combined_values.reshape(dim, dim)
+    print(UAVmap)
     np.random.shuffle(combined_values)     # Shuffle the combined values
-    mapname = 'map/' + str(dim) + '_' + str(i) + '.npy'
+    mapname = '64absoluteMap/' + str(dim) + '_' + str(i) + '.npy'
     np.save(mapname, UAVmap)
     grids = []
     for x in range(dim):
@@ -48,6 +44,6 @@ for i in tqdm(range(501, 1000)):
             else:
                 Hvalue[xI[0]][xI[1]] = -1
         Hvalue[xG[0]][xG[1]] = 0
-        hname = 'Hvalue/' + str(dim) + '_' + str(i) + '_' + str(xG) +'.npy'
+        hname = '64absoluteHvalue/' + str(dim) + '_' + str(i) + '_' + str(xG) +'.npy'
         print(Hvalue)
         np.save(hname, Hvalue)
