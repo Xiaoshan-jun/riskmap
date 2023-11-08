@@ -14,12 +14,12 @@ import numpy as np
 from tqdm import tqdm
 np.random.seed(80) 
 safec = 0.9
-dim = 32
+dim = 16
 num_elements = dim * dim
 for i in tqdm(range(0, 500)):
     #create random risky map
-    safeplace = int(0.7 * num_elements)
-    lowrisk = int(0 * num_elements)
+    safeplace = int(0.4 * num_elements)
+    lowrisk = int(0.4 * num_elements)
     highrisk = num_elements - lowrisk- safeplace
     values_safeplace = np.random.uniform(0, 0, safeplace)
     values_lowrisk = np.random.uniform(0, 0.05, lowrisk)
@@ -28,28 +28,31 @@ for i in tqdm(range(0, 500)):
     np.random.shuffle(combined_values)     # Shuffle the combined values
     UAVmap = combined_values.reshape(dim, dim)
     print(UAVmap)
-    mapname = '64absoluteMap/' + str(dim) + '_' + str(i) + '.npy'
+    mapname = '16riskMap/' + str(dim) + '_' + str(i) + '.npy'
     np.save(mapname, UAVmap)
     grids = []
     for x in range(dim):
         for y in range(dim):
             grids.append((x, y))
     for xG in tqdm(grids):
-        if UAVmap[xG[0]][xG[1]] == 1:
+        if UAVmap[xG[0]][xG[1]] > 0.1:
             #print('in')
             continue
-        Hvalue = np.zeros((dim, dim))
+        Hvalue = np.zeros((dim, dim, 5))
         for xI in grids:
-            if UAVmap[xI[0]][xI[1]] == 1:
-                Hvalue[xI[0]][xI[1]] = -1
+            if UAVmap[xI[0]][xI[1]] > 0.1:
+                Hvalue[xI[0]][xI[1]][:] = -1
                 continue
-            xI = (xI[0], xI[1], 1)
-            actionList, path, nodeList, count, explored = aStarSearch(xI,xG, UAVmap, safec)
-            if path:
-                Hvalue[xI[0]][xI[1]] = len(path) 
-            else:
-                Hvalue[xI[0]][xI[1]] = -1
+            for initialsafety in range(5):
+                safetylist = [1, 0.98, 0.96, 0.94, 0.92]
+                xI = (xI[0], xI[1], safetylist[initialsafety])
+                actionList, path, nodeList, count, explored = aStarSearch(xI,xG, UAVmap, safec)
+                if path:
+                    Hvalue[xI[0]][xI[1]][initialsafety] = len(path)
+                else:
+                    Hvalue[xI[0]][xI[1]][initialsafety:] = -1
+                    break
         Hvalue[xG[0]][xG[1]] = 0
-        hname = '64absoluteHvalue/' + str(dim) + '_' + str(i) + '_' + str(xG) +'.npy'
+        hname = '16riskHvalue/' + str(dim) + '_' + str(i) + '_' + str(xG) +'.npy'
         print(Hvalue)
         np.save(hname, Hvalue)
