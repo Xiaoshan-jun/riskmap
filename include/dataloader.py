@@ -25,6 +25,9 @@ def dataloader(size, split):
     if split == 1:
         mapdirectory = 'train/map/'
         Hdirectory = 'train/Hvalue/'
+    elif split == 2: #for evaluate
+        mapdirectory = 'map/'
+        Hdirectory = 'Hvalue/'
     else:
         mapdirectory = 'test/map/'
         Hdirectory = 'test/Hvalue/'
@@ -47,7 +50,7 @@ def dataloader(size, split):
             prelen = len(mapfilename[:-4])
             des = heufilename[prelen+1: - 4]
             des = ast.literal_eval(des)
-            des = des[0] * 16 + des[1]
+            des = des[0] * size + des[1]
             destination.append(des)
     print("data loading finished, ", "load time: ", time.time() - t0, "number of data: ", len(graph))
     graph = torch.tensor(graph, dtype=torch.float32)

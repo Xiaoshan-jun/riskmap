@@ -139,7 +139,7 @@ class Graph2HeuristicModel(nn.Module):
         #print(ans.shape)
         loss = self.loss_fn(ans, targets)
 
-        return logits, loss
+        return ans, loss
 
     def generate(self, idx):
         logits, loss = self(idx)

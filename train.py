@@ -65,7 +65,7 @@ def train():
     valdataset = dataloader(args.map_size, 0) #1 = train, 0 = test
     valDataLoader = DataLoader(valdataset, batch_size=args.batch_size, shuffle=True)
     model = Graph2HeuristicModel(args)
-    m = model.to(device)
+    m = model.to(args.device)
     optimizer = torch.optim.AdamW(m.parameters(), lr=1e-3)
     lowest = 10000
     for iter in tqdm(range(args.max_iters)):
@@ -75,6 +75,7 @@ def train():
             if losses['val'] < lowest:
                 lowest = losses['val']
                 filename = args.model_save + '_' + str(args.map_size) + '_' + str(iter) + '.pth'
+                print('newlow found, saving the model: ', filename)
                 torch.save(m.state_dict(), filename)
                 filename = args.model_save + '_' + str(args.map_size) + '_' + str(iter) + '_entire.pth'
                 torch.save(m, filename)

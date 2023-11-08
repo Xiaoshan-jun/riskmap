@@ -53,6 +53,15 @@ def manhattanHeuristic(state, goal):
 def euclideanHeuristic(state, goal):
     return ((goal[0] - state[0])**2 + (goal[1] - state[1])**2)**0.5
 
+def learnedHeuristic(des, hmap, size):
+    state = des[0] * size + des[1]
+    #print(state)
+    #print(hmap[state])
+    if hmap[state] > 0:
+        return hmap[state]
+    else:
+        return 100000
+
 def getCostOfActionsEuclideanDistance(a):
     return (a[0]**2 + a[1]**2)**0.5
 
@@ -64,7 +73,7 @@ def collisionCheck(reservedMap, position):
         return True
     return False        
 
-def aStarSearch(xI,xG, riskMap, safec = 0.9,heuristic='manhattan'):
+def aStarSearch(xI,xG, riskMap, safec = 0.9,heuristic='manhattan', hmap = None):
     "Search the node that has the lowest combined cost and heuristic first."
     """The function uses a function heuristic as an argument. We have used
   the null heuristic here first, you should redefine heuristics as part of 
@@ -110,8 +119,10 @@ def aStarSearch(xI,xG, riskMap, safec = 0.9,heuristic='manhattan'):
                     newg = current.g + getCostOfActionsEuclideanDistance(a)
                     if heuristic == 'manhattan':
                         newc = newg + manhattanHeuristic(newposition, xG)
-                    if heuristic == 'rfactoreuclidean':
+                    if heuristic == 'euclidean':
                         newc = newg + euclideanHeuristic(newposition, xG)
+                    if heuristic == 'learning':
+                        newc = newg + learnedHeuristic(newposition, hmap, len(riskMap))
                     # check if new node found add to nodeList and pripority queue
                     if newposition not in nodeList:
                         newnode = node(newposition, newg, newc)
