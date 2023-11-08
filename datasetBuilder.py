@@ -40,6 +40,9 @@ for i in tqdm(range(0, 500)):
             continue
         Hvalue = np.zeros((dim, dim))
         for xI in grids:
+            if UAVmap[xI[0]][xI[1]] == 1:
+                Hvalue[xI[0]][xI[1]] = -1
+                continue
             xI = (xI[0], xI[1], 1)
             actionList, path, nodeList, count, explored = aStarSearch(xI,xG, UAVmap, safec)
             if path:
