@@ -16,7 +16,12 @@ np.random.seed(80)
 safec = 0.9
 dim = 16
 num_elements = dim * dim
+<<<<<<< Updated upstream
 for i in tqdm(range(0, 500)):
+=======
+
+for i in tqdm(range(501, 1000)):
+>>>>>>> Stashed changes
     #create random risky map
     safeplace = int(0.4 * num_elements)
     lowrisk = int(0.4 * num_elements)
