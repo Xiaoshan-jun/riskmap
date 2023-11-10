@@ -30,7 +30,7 @@ class PriorityQueue:
     def insert(self, node):
         last = True
         for i in range(len(self.queue)):
-            if self.NodeList[self.queue[i]].gh > node.gh:
+            if self.NodeList[(self.queue[i][0], self.queue[i][1])][self.queue[i][2]].gh > node.gh:
                 self.queue.insert(i, node.position)
                 last = False
                 self._index += 1
@@ -54,11 +54,24 @@ def euclideanHeuristic(state, goal):
     return ((goal[0] - state[0])**2 + (goal[1] - state[1])**2)**0.5
 
 def learnedHeuristic(des, hmap, size):
-    state = des[0] * size + des[1]
+    # if des[2] >= 1:
+    #     k = 0
+    # elif des[2] >= 0.98:
+    #     k = 1
+    # elif des[2] >= 0.96:
+    #     k = 2
+    # elif des[2] >= 0.94:
+    #     k = 3
+    # elif des[2] >= 0.92:
+    #     k = 4
+    # else:
+    #     return 100000
     #print(state)
     #print(hmap[state])
-    if hmap[state] > 0:
-        return hmap[state]
+    if hmap[des[0]][des[1]] >= 0:
+        #print(des)
+        #print(hmap[des[0]][des[1]][k])
+        return hmap[des[0]][des[1]]
     else:
         return 100000
 
@@ -88,8 +101,9 @@ def aStarSearch(xI,xG, riskMap, safec = 0.9,heuristic='manhattan', hmap = None):
     #actions = [(1, 0), (0, 1), (-1, 0), (0, -1)]
     root = node(xI, 0, manhattanHeuristic(xI, xG))
     root.path = []
-    nodeList = {} #{position：node}
-    nodeList[xI] = root
+    nodeList = {} #{position：{risk: node} }
+    nodeList[(xI[0], xI[1])] = {}
+    nodeList[(xI[0], xI[1])][xI[2]] = root
     visited = PriorityQueue(nodeList) 
     visited.insert(root)
     count = 0
@@ -106,7 +120,7 @@ def aStarSearch(xI,xG, riskMap, safec = 0.9,heuristic='manhattan', hmap = None):
             #print("goal found")
             break
         explored.append(currentposition)
-        current = nodeList[currentposition]
+        current = nodeList[(currentposition[0], currentposition[1])][currentposition[2]]
         for a in actions:
             # check collision
             newposition = (currentposition[0] + a[0], currentposition[1] + a[1])
@@ -115,7 +129,7 @@ def aStarSearch(xI,xG, riskMap, safec = 0.9,heuristic='manhattan', hmap = None):
                 newsafety = currentposition[2] * (1 - riskMap[newposition[0]][newposition[1]])
                 newsafety = round(newsafety, 3)
                 if newsafety > safec:
-                    newposition = (newposition[0], newposition[1], newsafety)
+                    newpositionwithsafety = (newposition[0], newposition[1], newsafety)
                     newg = current.g + getCostOfActionsEuclideanDistance(a)
                     if heuristic == 'manhattan':
                         newc = newg + manhattanHeuristic(newposition, xG)
@@ -125,23 +139,40 @@ def aStarSearch(xI,xG, riskMap, safec = 0.9,heuristic='manhattan', hmap = None):
                         newc = newg + learnedHeuristic(newposition, hmap, len(riskMap))
                     # check if new node found add to nodeList and pripority queue
                     if newposition not in nodeList:
-                        newnode = node(newposition, newg, newc)
-                        nodeList[newposition] = newnode
-                        visited.insert(newnode)
+                        newnode = node(newpositionwithsafety, newg, newc)
                         newnode.path = current.path.copy()
-                        newnode.path.append(newposition)
+                        newnode.path.append(newpositionwithsafety)
+                        nodeList[newposition] = {}
+                        nodeList[newposition][newsafety] = newnode
+                        visited.insert(newnode)
                     else:
-                        if newc < nodeList[newposition].gh:
-                            newnode = node(newposition, newg, newc)
+                        approved = 0
+                        for oldsafety, oldnode in nodeList[newposition].items():
+                            # newnode is better in both, remove the old node
+                            if newc < oldnode.gh and oldsafety < newsafety:
+                                if oldnode.position in  visited.queue:
+                                    visited.remove(oldnode.position)
+                                approved = 1
+                            # newnode is worse in distance but has better safety, keep both node
+                            elif newc >= oldnode.gh and oldsafety < newsafety:
+                                approved = 1 
+                            # newnode is better in distance but has worse safety, keep both node
+                            elif newc < oldnode.gh and oldsafety > newsafety:
+                                approved = 1
+                            #if there is an old node is better than the current node in both, abandon new node
+                            elif newc >= oldnode.gh and oldsafety >= newsafety:
+                                approved = 0
+                                break
+                        if approved:
+                            newnode = node(newpositionwithsafety, newg, newc)
                             newnode.path = current.path.copy()
-                            newnode.path.append(newposition)
-                            nodeList[newposition] = newnode
-                            if newposition in  visited.queue:
-                                visited.remove(newposition)
+                            newnode.path.append(newpositionwithsafety)
+                            nodeList[newposition][newsafety] = newnode
                             visited.insert(newnode)
+                                
                         
 
-    path = nodeList[xG].path
+    path = nodeList[(xG[0], xG[1])][xG[2]].path
     actionList = []
     for i in range(len(path) - 1):
         node1 = path[i]
