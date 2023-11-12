@@ -21,7 +21,7 @@ num_elements = dim * dim
 
 
 
-for i in tqdm(range(0, 100)):
+for i in tqdm(range(0, 10)):
     #create random risky map
     safeplace = int(0.3 * num_elements)
     lowrisk = int(0.4 * num_elements)
@@ -50,13 +50,14 @@ for i in tqdm(range(0, 100)):
             else:
                 Hvalue[xI[0]][xI[1]] = manhattanHeuristic(xI, xG)
         for xI in grids:
-            Hvalue2 = Hvalue.copy()
             xI = (xI[0], xI[1], 1)
             actionList, path, nodeList, count, explored = aStarSearch(xI,xG, UAVmap, safec)
             if path:
-                for i, node in enumerate(path):
-                    Hvalue2[node[0], node[1]] = 0.1 * (len(path) - 1 - i)
+                if len(path) > 10:
+                    Hvalue2 = Hvalue.copy()
+                    for _, node in enumerate(path):
+                        Hvalue2[node[0], node[1]] = 0
+                    hname = 'dataset/16risk/Hvalue/' + str(dim) + '_' + str(i) + '_' + str(xI) + '_' + str(xG) + '.npy'
+                    np.save(hname, Hvalue2)
             else:
                 continue
-            hname = 'dataset/16risk/Hvalue/' + str(dim) + '_' + str(i) + '_' + str(xI) + '_' + str(xG) +'.npy'
-            np.save(hname, Hvalue2)

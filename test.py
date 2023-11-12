@@ -53,6 +53,7 @@ learneddistance = 0
 manhattandistance = 0
 learnedwin = 0
 manhattanwin = 0
+noresult = 0
 for i in tqdm(range(1000)):
     data_iterator = iter(evaluateDataLoader)
     riskmap, start, dest, hmap = next(data_iterator)
@@ -80,11 +81,9 @@ for i in tqdm(range(1000)):
     #random pick xI
     xI = (start//dim, start%dim, 1)
     xG = (dest//dim, dest%dim)
-    print(xG)
     # while hmap[xI[0]][xI[1]] == -1:
     #     xI = (np.random.randint(0, dim), np.random.randint(0, dim), 1)
     #     xIindex = xI[0] * dim + xI[1]
-    print(xI)
     #learned hmap
     actionList, path, nodeList, count, explored = aStarSearch(xI, xG, UAVmap, safec, 'learning', hmap)
     if explored:
@@ -106,12 +105,17 @@ for i in tqdm(range(1000)):
             learnedwin += 1
         else:
             manhattanwin += 1
-    
+    elif actionList:
+        print("something go wrong")
+    else:
+        noresult += 1
 print("learnedexplored:", learnedexplored)
 print("manhattanexplored:", manhattanexplored)
 print("learneddistance:", learneddistance)
 print("manhattandistance:", manhattandistance)
 print("learnedwin:", learnedwin)
 print("manhattanwin:", manhattanwin)
+print("noresult:", noresult)
+print("total: ", learnedwin + manhattanwin + noresult)
 
 
