@@ -14,14 +14,14 @@ import numpy as np
 from tqdm import tqdm
 from include.astarastar import manhattanHeuristic
 
-np.random.seed(80) 
+np.random.seed(90) 
 safec = 0.9
 dim = 16
 num_elements = dim * dim
 
 
 
-for i in tqdm(range(0, 10)):
+for i in tqdm(range(400, 1000)):
     #create random risky map
     safeplace = int(0.3 * num_elements)
     lowrisk = int(0.4 * num_elements)
@@ -36,6 +36,7 @@ for i in tqdm(range(0, 10)):
     mapname = 'dataset/16risk/map/' + str(dim) + '_' + str(i) + '.npy'
     np.save(mapname, UAVmap)
     grids = []
+    datapoints = []
     for x in range(dim):
         for y in range(dim):
             grids.append((x, y))
@@ -51,13 +52,24 @@ for i in tqdm(range(0, 10)):
                 Hvalue[xI[0]][xI[1]] = manhattanHeuristic(xI, xG)
         for xI in grids:
             xI = (xI[0], xI[1], 1)
+            if manhattanHeuristic(xI, xG) < 10:
+                continue
             actionList, path, nodeList, count, explored = aStarSearch(xI,xG, UAVmap, safec)
-            if path:
-                if len(path) > 10:
+            if path and actionList and nodeList:
+                if len(path) > 16:
                     Hvalue2 = Hvalue.copy()
                     for _, node in enumerate(path):
                         Hvalue2[node[0], node[1]] = 0
-                    hname = 'dataset/16risk/Hvalue/' + str(dim) + '_' + str(i) + '_' + str(xI) + '_' + str(xG) + '.npy'
-                    np.save(hname, Hvalue2)
+                    data = {}
+                    data['start'] = xI
+                    data['destination'] = xG
+                    data['Hvalue'] = Hvalue2
+                    datapoints.append(data)
             else:
                 continue
+    kwargs = {}
+    for j, datapoint in enumerate(datapoints):
+        for key, array in datapoint.items():
+            kwargs[f'data_{j}_{key}'] = array
+    hname = 'dataset/16risk/Hvalue/' + str(dim) + '_' + str(i) + '_' + str(xI) + '_' + str(xG) + '.npz'
+    np.savez(hname, **kwargs)
