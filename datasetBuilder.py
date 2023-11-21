@@ -20,7 +20,6 @@ dim = 16
 num_elements = dim * dim
 
 
-
 for i in tqdm(range(400, 1000)):
     #create random risky map
     safeplace = int(0.3 * num_elements)
