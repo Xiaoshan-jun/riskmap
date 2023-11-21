@@ -49,14 +49,19 @@ for i in tqdm(range(400, 1000)):
             if UAVmap[xI[0]][xI[1]] > 0.1:
                 Hvalue[xI[0]][xI[1]] = -1
             else:
-                Hvalue[xI[0]][xI[1]] = manhattanHeuristic(xI, xG)
+                xI2 = (xI[0], xI[1], 1)
+                actionList, path, nodeList, count, explored = aStarSearch(xI2,xG, UAVmap, safec)
+                if actionList:
+                    Hvalue[xI[0]][xI[1]] = manhattanHeuristic(xI, xG)
+                else:
+                    Hvalue[xI[0]][xI[1]] = -1
         for xI in grids:
             xI = (xI[0], xI[1], 1)
             if manhattanHeuristic(xI, xG) < 10:
                 continue
             actionList, path, nodeList, count, explored = aStarSearch(xI,xG, UAVmap, safec)
             if path and actionList and nodeList:
-                if len(path) > 16:
+                if len(path) > dim:
                     Hvalue2 = Hvalue.copy()
                     for _, node in enumerate(path):
                         Hvalue2[node[0], node[1]] = 0
