@@ -11,6 +11,7 @@ import matplotlib.colors
 import matplotlib.cm as cm
 import numpy as np
 from tqdm import tqdm
+import time
 def manhattanHeuristic(state, goal):
    """ewg, newc)
    A heuristic function estimates the cost from the current state to the nearest
@@ -34,15 +35,23 @@ parser.add_argument('--eval_iters', type=int, default=200)
 parser.add_argument('--max_iters', type=int, default=10000)
 parser.add_argument('--device', type=str, default='cuda')
 parser.add_argument('--model_save', type=str, default='trainedModel/Checkpoint')
+
+
+
+test_type = 0 # 1 for model, 2 for dataset
+
+
+
 args = parser.parse_args()
 
 model = Graph2HeuristicModel(args)
 filename = args.model_save + '_' + str(args.map_size) + '_' + str(1000) + '.pth'
 # Load the state dict back into the model
-model.load_state_dict(torch.load(filename))
-m = model.to(args.device)
-# Don't forget to set the model to evaluation mode if you're doing inference
-m.eval()
+if test_type:
+    model.load_state_dict(torch.load(filename))
+    m = model.to(args.device)
+    # Don't forget to set the model to evaluation mode if you're doing inference
+    m.eval()
 safec = 0.9
 dim = 16
 evaluatedataset = dataloader(dim, 'dataset/16risk/') #
@@ -54,7 +63,9 @@ manhattandistance = 0
 learnedwin = 0
 manhattanwin = 0
 noresult = 0
-for i in tqdm(range(1000)):
+learnedtime = 0
+manhattantime = 0
+for i in tqdm(range(10000)):
     data_iterator = iter(evaluateDataLoader)
     riskmap, start, dest, hmap = next(data_iterator)
     start2 = start.to(args.device)
@@ -70,6 +81,7 @@ for i in tqdm(range(1000)):
     #print(UAVmap.shape)
     #logits = logits.to('cpu')
     #logits = logits.detach().numpy()[0]
+    t0 = time.time()
     hmap = hmap.numpy()[0]
     #print(logits)
     #if np.sum(hmap == -1) > dim*dim - 10:
@@ -90,9 +102,9 @@ for i in tqdm(range(1000)):
         learnedexplored += len(explored)
     if actionList:
         learneddistance += len(actionList)
-
-
-
+    learnedtime += time.time() - t0
+    
+    t0 = time.time()
     actionList2, path2, nodeList2, count2, explored2 = aStarSearch(xI, xG, UAVmap, safec)
     if explored2:
         manhattanexplored += len(explored2)
@@ -104,11 +116,12 @@ for i in tqdm(range(1000)):
         elif len(explored2) > len(explored):
             learnedwin += 1
         else:
-            manhattanwin += 1
+            learnedwin += 1
     elif actionList:
         print("something go wrong")
     else:
         noresult += 1
+    manhattantime += time.time() - t0 
 print("learnedexplored:", learnedexplored)
 print("manhattanexplored:", manhattanexplored)
 print("learneddistance:", learneddistance)
@@ -117,5 +130,7 @@ print("learnedwin:", learnedwin)
 print("manhattanwin:", manhattanwin)
 print("noresult:", noresult)
 print("total: ", learnedwin + manhattanwin + noresult)
+print("learnedtime:", learnedtime)
+print("manhattantime:", manhattantime)
 
 

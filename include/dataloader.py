@@ -4,6 +4,7 @@ import numpy as np
 import ast
 import time
 import torch
+from tqdm import tqdm
 """
 train data includes risk map(graph), destination, and correspond heuristic value map
 """
@@ -26,30 +27,36 @@ def dataloader(size, split):
     mapdirectory = split + 'map/'
     Hdirectory = split + 'Hvalue/'
     mapfilenames = [f for f in os.listdir(mapdirectory) if f.startswith(str(size))]
-    print(mapdirectory)
     graph = []
     start = []
     destination = []
     targets = []
-    for mapfilename in mapfilenames:
-        heufilenames = [f for f in os.listdir(Hdirectory) if f.startswith(str(mapfilename[:-4] + '_'))]
-        for heufilename in heufilenames:
+    #count = 1
+    for mapfilename in tqdm(mapfilenames):
+        #count += 1
+        #if count > 2:
+            #break
+        print(mapfilename)
+        heufilenames = [f for f in os.listdir(Hdirectory) if f.startswith(mapfilename[:-4])]
+        print(heufilenames)
+        if heufilenames:
+            heufilename = heufilenames[0]
+        datapoints = np.load(Hdirectory + heufilename)
+        for i in range(int(len(datapoints)/3)):
             #load risk map
             rm = np.load(mapdirectory + mapfilename)
             rm = np.array(rm).reshape(-1)
             graph.append(rm)
             #load h value map
-            hm = np.load(Hdirectory + heufilename)
-            hm = np.array(hm)
+            hm = datapoints[f'data_{i}_Hvalue']
+            hm = np.array(hm).reshape(-1)
             targets.append(hm)
-            a = heufilename.split('_')
-            sta = a[2]
-            sta = ast.literal_eval(sta)
+            #load start
+            sta = datapoints[f'data_{i}_start']
             sta = sta[0] * size + sta[1]
             start.append(sta)
             #load destination
-            des = a[3][:-4]
-            des = ast.literal_eval(des)
+            des = datapoints[f'data_{i}_destination']
             des = des[0] * size + des[1]
             destination.append(des)
     print("data loading finished, ", "load time: ", time.time() - t0, "number of data: ", len(graph))

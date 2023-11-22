@@ -107,6 +107,7 @@ class Graph2HeuristicModel(nn.Module):
         super().__init__()
         self.risk_input = nn.Linear(args.block_size, args.block_size * args.n_embd)
         self.position_embedding_table = nn.Embedding(args.block_size, args.n_embd) #block_size is the number of nodes
+        self.start_embedding_table = nn.Embedding(args.block_size, args.n_embd)
         self.destination_embedding_table = nn.Embedding(args.block_size, args.n_embd) #
         self.blocks = nn.Sequential(
             *[Block(args.n_embd, args.n_head, args.dropout) for _ in range(args.n_layer)]
@@ -117,20 +118,22 @@ class Graph2HeuristicModel(nn.Module):
         self.device = args.device
 
 
-    def forward(self, risk, destination, targets = None):
+    def forward(self, risk, start, destination, targets = None):
         B, T = risk.shape #B is batch, T is the number of nodes, C is the channel of of each number of nodes
         #idx is (1, x*x), destination is (1, 1)
         pos_emb = self.position_embedding_table(torch.arange(T, device = self.device)) #(T, C)
         des_emb = self.destination_embedding_table(destination) #(B, C)
+        start_emb = self.start_embedding_table(start) #(B, C)
         risk_emb = self.risk_input(risk) #(B, T*C)
         #print(pos_emb.shape)
         #print(des_emb.shape)
         #print(risk_emb.shape)
         des_emb = des_emb.unsqueeze(1).expand(risk_emb.size(0), pos_emb.size(0), pos_emb.size(1))#(B, T, C)
+        start_emb = start_emb.unsqueeze(1).expand(risk_emb.size(0), pos_emb.size(0), pos_emb.size(1))#(B, T, C)
         #print(des_emb.shape)
         risk_emb = risk_emb.view(risk_emb.size(0), pos_emb.size(0), pos_emb.size(1))#(B, T, C)
         #print(risk_emb.shape)
-        x = pos_emb + des_emb + risk_emb#(B, T, C)
+        x = pos_emb + start_emb + des_emb + risk_emb#(B, T, C)
         x = self.blocks(x)  # (B, T, C)
         x = self.ln_f(x) # (B, T, C)
         logits = self.lm_head(x)#(B, T, T)
