@@ -18,7 +18,7 @@ np.random.seed(80)
 safec = 0.8
 dim = 16
 num_elements = dim * dim
-for i in tqdm(range(1, 1080)):
+for i in tqdm(range(98, 1080)):
     mapname = 'dataset/16wind/map/' + str(dim) + '_' + str(i) + '.npy'
     UAVmap = np.load(mapname)
     grids = []
