@@ -57,14 +57,14 @@ def train():
     parser.add_argument('--device', type=str, default='cuda')
     parser.add_argument('--model_save', type=str, default='trainedModel/Checkpoint')
     args = parser.parse_args()
-
+    print(torch.cuda.is_available())
     #
     print('loading train dataset')
-    traindataset = dataloader(args.map_size, 'dataset/16risk/train/') #
+    traindataset = dataloader(args.map_size, 'dataset/16wind/train/') #
     trainDataLoader = DataLoader(traindataset, batch_size=args.batch_size, shuffle=True)
     #
     print('loading val dataset')
-    valdataset = dataloader(args.map_size, 'dataset/16risk/val/') 
+    valdataset = dataloader(args.map_size, 'dataset/16wind/val/') 
     valDataLoader = DataLoader(valdataset, batch_size=args.batch_size, shuffle=True)
     model = Graph2HeuristicModel(args)
     m = model.to(args.device)

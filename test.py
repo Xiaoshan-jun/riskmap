@@ -54,7 +54,7 @@ if test_type:
     m.eval()
 safec = 0.9
 dim = 16
-evaluatedataset = dataloader(dim, 'dataset/16risk/') #
+evaluatedataset = dataloader(dim, 'dataset/16wind/train/') #
 evaluateDataLoader = DataLoader(evaluatedataset, batch_size=1, shuffle=True)
 learnedexplored = 0
 manhattanexplored = 0
@@ -68,10 +68,10 @@ manhattantime = 0
 for i in tqdm(range(10000)):
     data_iterator = iter(evaluateDataLoader)
     riskmap, start, dest, hmap = next(data_iterator)
-    start2 = start.to(args.device)
-    riskmap2 = riskmap.to(args.device)
-    dest2 = dest.to(args.device)
-    hmap2 = hmap.to(args.device)
+    # start2 = start.to(args.device)
+    # riskmap2 = riskmap.to(args.device)
+    # dest2 = dest.to(args.device)
+    # hmap2 = hmap.to(args.device)
     #logits, loss = model(riskmap2, dest2, hmap2)
     dest = dest.numpy()[0]
     start = start.numpy()[0]

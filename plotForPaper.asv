@@ -69,5 +69,5 @@ axis off
 hold off; % Release the plot
 
 title('example path','FontSize',16)
-view(-30, 10);
+view(azimuth, elevation);
 print('exampleRiskpath.png', '-dpng', '-r900');
