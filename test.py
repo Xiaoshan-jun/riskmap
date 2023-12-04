@@ -38,14 +38,14 @@ parser.add_argument('--model_save', type=str, default='trainedModel/Checkpoint')
 
 
 
-test_type = 0 # 1 for model, 2 for dataset
+test_type = 1 # 1 for model, 0 for dataset
 
 
 
 args = parser.parse_args()
 
 model = Graph2HeuristicModel(args)
-filename = args.model_save + '_' + str(args.map_size) + '_' + str(1000) + '.pth'
+filename = args.model_save + '_' + str(args.map_size) + '_' + str(0) + '.pth'
 # Load the state dict back into the model
 if test_type:
     model.load_state_dict(torch.load(filename))
@@ -54,6 +54,7 @@ if test_type:
     m.eval()
 safec = 0.9
 dim = 16
+
 evaluatedataset = dataloader(dim, 'dataset/16wind/train/') #
 evaluateDataLoader = DataLoader(evaluatedataset, batch_size=1, shuffle=True)
 learnedexplored = 0
@@ -65,14 +66,13 @@ manhattanwin = 0
 noresult = 0
 learnedtime = 0
 manhattantime = 0
-for i in tqdm(range(10000)):
-    data_iterator = iter(evaluateDataLoader)
-    riskmap, start, dest, hmap = next(data_iterator)
-    # start2 = start.to(args.device)
-    # riskmap2 = riskmap.to(args.device)
-    # dest2 = dest.to(args.device)
-    # hmap2 = hmap.to(args.device)
-    #logits, loss = model(riskmap2, dest2, hmap2)
+
+for riskmap, start, dest, hmap in evaluateDataLoader:
+    start2 = start.to(args.device)
+    riskmap2 = riskmap.to(args.device)
+    dest2 = dest.to(args.device)
+    hmap2 = hmap.to(args.device)
+    logits, loss = model(riskmap2, start2, dest2, hmap2)
     dest = dest.numpy()[0]
     start = start.numpy()[0]
     #transfer riskmap to dim*dim
@@ -82,7 +82,7 @@ for i in tqdm(range(10000)):
     #logits = logits.to('cpu')
     #logits = logits.detach().numpy()[0]
     t0 = time.time()
-    hmap = hmap.numpy()[0]
+    hmap = hmap.numpy()[0].reshape(dim, dim)
     #print(logits)
     #if np.sum(hmap == -1) > dim*dim - 10:
         #continue
