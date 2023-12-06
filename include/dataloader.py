@@ -31,11 +31,11 @@ def dataloader(size, split):
     start = []
     destination = []
     targets = []
-    # count = 1
+    count = 1
     for mapfilename in tqdm(mapfilenames):
-        # count += 1
-        # if count > 2:
-        #     break
+        count += 1
+        if count > 2:
+            break
         print(mapfilename)
         heufilenames = [f for f in os.listdir(Hdirectory) if f.startswith(mapfilename[:-4])]
         print(heufilenames)

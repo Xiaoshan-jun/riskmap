@@ -20,13 +20,13 @@ dim = 16
 num_elements = dim * dim
 
 
-for i in tqdm(range(300, 400)):
+for i in tqdm(range(0, 600)):
     #create random risky map
-    safeplace = int(0.3 * num_elements)
-    lowrisk = int(0.4 * num_elements)
+    safeplace = int(0.2 * num_elements)
+    lowrisk = int(0.6 * num_elements)
     highrisk = num_elements - lowrisk- safeplace
     values_safeplace = np.random.uniform(0, 0, safeplace)
-    values_lowrisk = np.random.uniform(0, 0.02, lowrisk)
+    values_lowrisk = np.random.uniform(0, 0.01, lowrisk)
     values_highrisk = np.random.uniform(1, 1, highrisk)
     combined_values = np.concatenate((values_safeplace, values_lowrisk, values_highrisk))
     np.random.shuffle(combined_values)     # Shuffle the combined values

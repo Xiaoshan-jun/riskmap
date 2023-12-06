@@ -55,7 +55,7 @@ if test_type:
 safec = 0.9
 dim = 16
 
-evaluatedataset = dataloader(dim, 'dataset/16wind/val/') #
+evaluatedataset = dataloader(dim, 'dataset/16risk/val/') #
 evaluateDataLoader = DataLoader(evaluatedataset, batch_size=1, shuffle=True)
 learnedexplored = 0
 manhattanexplored = 0
@@ -66,24 +66,25 @@ manhattanwin = 0
 noresult = 0
 learnedtime = 0
 manhattantime = 0
-
-for riskmap, start, dest, hmap in evaluateDataLoader:
+evaluateDataLoader = iter(evaluateDataLoader)
+for i in range(10):
+    riskmap, start, dest, hmap = next(evaluateDataLoader)
     start2 = start.to(args.device)
     riskmap2 = riskmap.to(args.device)
     dest2 = dest.to(args.device)
     hmap2 = hmap.to(args.device)
-    logits, loss = model(riskmap2, start2, dest2, hmap2)
+    #logits, loss = model(riskmap2, start2, dest2, hmap2)
     dest = dest.numpy()[0]
     start = start.numpy()[0]
     #transfer riskmap to dim*dim
     riskmap = np.array(riskmap)
     UAVmap = riskmap.reshape(dim, dim)
     #print(UAVmap.shape)
-    logits = logits.to('cpu')
-    logits = logits.detach().numpy()[0]
-    hmap = logits.reshape(dim, dim)
+    #logits = logits.to('cpu')
+    #logits = logits.detach().numpy()[0]
+    #hmap = logits.reshape(dim, dim)
     t0 = time.time()
-    #hmap = hmap.numpy()[0].reshape(dim, dim)
+    hmap = hmap.numpy()[0].reshape(dim, dim)
     #print(logits)
     #if np.sum(hmap == -1) > dim*dim - 10:
         #continue
@@ -99,11 +100,39 @@ for riskmap, start, dest, hmap in evaluateDataLoader:
     #     xIindex = xI[0] * dim + xI[1]
     #learned hmap
     actionList, path, nodeList, count, explored = aStarSearch(xI, xG, UAVmap, safec, 'learning', hmap)
+    print(xI)
+    print(xG)
+    print(path)
+    learnedtime += time.time() - t0
+    cmap = plt.cm.gray_r
+    cmap.set_under('white')  # values below the lowest in the colormap are white
+    cmap.set_over('black')   # values above the highest in the colormap are black
+    fig, ax = plt.subplots()
+    cax = ax.imshow(UAVmap, cmap=cmap, vmin=0, vmax=0.1)
+        # Plotting the matrix with colors defined by the numbers
+    #plt.imshow(UAVmap, cmap='gray_r')
+    fig.colorbar(cax) # Adds a color bar to match the color scale
+    plt.title('random map case example1')
+    plt.xticks(np.arange(UAVmap.shape[1]), np.arange(UAVmap.shape[1]))
+    plt.yticks(np.arange(UAVmap.shape[0]), np.arange(UAVmap.shape[0]))
+    ax.add_patch(plt.Rectangle((xI[1]-0.5, xI[0]-0.5), 1, 1, edgecolor='yellow', facecolor='none', lw=2))
+    for (x, y, s) in path:
+        ax.add_patch(plt.Rectangle((y-0.5, x-0.5), 1, 1, edgecolor='red', facecolor='none', lw=2))
+    ax.add_patch(plt.Rectangle((xG[1]-0.5, xG[0]-0.5), 1, 1, edgecolor='green', facecolor='none', lw=2))
+    matrix = np.zeros((dim,dim))
+    for (x, y, s) in explored:
+        matrix[x][y] += 1
+    for x in range(dim):
+        for y in range(dim):
+            if matrix[x][y] > 0:
+                ax.text(y, x, f'{int(matrix[x, y])}', ha='center', va='center', color='blue')
+    hd_image_path = 'figure/randommapexample.png'
+    fig.savefig(hd_image_path, dpi=900)
+    plt.show()
     if explored:
         learnedexplored += len(explored)
     if actionList:
         learneddistance += len(actionList)
-    learnedtime += time.time() - t0
     
     t0 = time.time()
     actionList2, path2, nodeList2, count2, explored2 = aStarSearch(xI, xG, UAVmap, safec)
@@ -112,12 +141,12 @@ for riskmap, start, dest, hmap in evaluateDataLoader:
     if actionList2:
         manhattandistance += len(actionList2)
     if actionList2:
-        if len(actionList2) < len(actionList):
+        if len(actionList2) > len(actionList):
             manhattanwin += 1
         elif len(explored2) > len(explored):
             learnedwin += 1
         else:
-            manhattanwin += 1
+            learnedwin += 1
     elif actionList:
         print("something go wrong")
     else:
@@ -133,5 +162,3 @@ print("noresult:", noresult)
 print("total: ", learnedwin + manhattanwin + noresult)
 print("learnedtime:", learnedtime)
 print("manhattantime:", manhattantime)
-
-
