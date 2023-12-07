@@ -38,7 +38,7 @@ parser.add_argument('--model_save', type=str, default='trainedModel/Checkpoint')
 
 
 
-test_type = 0 # 1 for model, 0 for dataset
+test_type = 1 # 1 for model, 0 for dataset
 
 
 
@@ -55,7 +55,7 @@ if test_type:
 safec = 0.9
 dim = 16
 
-evaluatedataset = dataloader(dim, 'dataset/16wind/val/') #
+evaluatedataset = dataloader(dim, 'dataset/16risk/val/') #
 evaluateDataLoader = DataLoader(evaluatedataset, batch_size=1, shuffle=True)
 learnedexplored = 0
 manhattanexplored = 0
@@ -67,23 +67,27 @@ noresult = 0
 learnedtime = 0
 manhattantime = 0
 
-for riskmap, start, dest, hmap in evaluateDataLoader:
+for riskmap, start, dest, hmap in tqdm(evaluateDataLoader):
     start2 = start.to(args.device)
     riskmap2 = riskmap.to(args.device)
     dest2 = dest.to(args.device)
     hmap2 = hmap.to(args.device)
-    logits, loss = model(riskmap2, start2, dest2, hmap2)
     dest = dest.numpy()[0]
     start = start.numpy()[0]
     #transfer riskmap to dim*dim
     riskmap = np.array(riskmap)
     UAVmap = riskmap.reshape(dim, dim)
     #print(UAVmap.shape)
-    logits = logits.to('cpu')
-    logits = logits.detach().numpy()[0]
-    hmap = logits.reshape(dim, dim)
+    #-----uncommand if model--------------------
+    if test_type:
+        logits, loss = model(riskmap2, start2, dest2, hmap2)
+        logits = logits.to('cpu')
+        logits = logits.detach().numpy()[0]
+        hmap = logits.reshape(dim, dim)
+    #-----------------------------------------
+    else:
+        hmap = hmap.numpy()[0].reshape(dim, dim)
     t0 = time.time()
-    #hmap = hmap.numpy()[0].reshape(dim, dim)
     #print(logits)
     #if np.sum(hmap == -1) > dim*dim - 10:
         #continue
@@ -122,16 +126,17 @@ for riskmap, start, dest, hmap in evaluateDataLoader:
         print("something go wrong")
     else:
         noresult += 1
-    manhattantime += time.time() - t0 
-print("learnedexplored:", learnedexplored)
-print("manhattanexplored:", manhattanexplored)
-print("learneddistance:", learneddistance)
-print("manhattandistance:", manhattandistance)
+    manhattantime += time.time() - t0
+total = learnedwin + manhattanwin + noresult
+print("learnedexplored:", round(learnedexplored/total,2))
+print("manhattanexplored:", round(manhattanexplored/total,2))
+print("learneddistance:", round(learneddistance/total, 2))
+print("manhattandistance:", round(manhattandistance/total, 2))
 print("learnedwin:", learnedwin)
 print("manhattanwin:", manhattanwin)
 print("noresult:", noresult)
 print("total: ", learnedwin + manhattanwin + noresult)
-print("learnedtime:", learnedtime)
-print("manhattantime:", manhattantime)
+print("learnedtime:", round(learnedtime/total,2))
+print("manhattantime:", round(manhattantime/total, 2))
 
 
