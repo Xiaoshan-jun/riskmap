@@ -45,7 +45,7 @@ test_type = 1 # 1 for model, 0 for dataset
 args = parser.parse_args()
 
 model = Graph2HeuristicModel(args)
-filename = args.model_save + '_' + str(args.map_size) + '_' + str(10) + '.pth'
+filename = args.model_save + '_' + str(args.map_size) + '_' + str(420) + '.pth'
 # Load the state dict back into the model
 if test_type:
     model.load_state_dict(torch.load(filename))
@@ -66,8 +66,9 @@ manhattanwin = 0
 noresult = 0
 learnedtime = 0
 manhattantime = 0
-
-for riskmap, start, dest, hmap in tqdm(evaluateDataLoader):
+evaluateDataLoader = iter(evaluateDataLoader)
+for i in tqdm(range(10000)):
+    riskmap, start, dest, hmap = next(evaluateDataLoader)
     start2 = start.to(args.device)
     riskmap2 = riskmap.to(args.device)
     dest2 = dest.to(args.device)
@@ -132,11 +133,11 @@ print("learnedexplored:", round(learnedexplored/total,2))
 print("manhattanexplored:", round(manhattanexplored/total,2))
 print("learneddistance:", round(learneddistance/total, 2))
 print("manhattandistance:", round(manhattandistance/total, 2))
-print("learnedwin:", learnedwin)
-print("manhattanwin:", manhattanwin)
+print("learnedwin:", round(learnedwin/total*100, 2))
+print("manhattanwin:", round(manhattanwin/total*100, 2))
 print("noresult:", noresult)
 print("total: ", learnedwin + manhattanwin + noresult)
-print("learnedtime:", round(learnedtime/total,2))
-print("manhattantime:", round(manhattantime/total, 2))
+print("learnedtime:", round(learnedtime/total,4))
+print("manhattantime:", round(manhattantime/total, 4))
 
 
