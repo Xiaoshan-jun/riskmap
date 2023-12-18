@@ -1,5 +1,5 @@
 import argparse
-from include.dataloader import dataloader
+from include.dataloader import dataset_builder
 from torch.utils.data import DataLoader
 from include.model import Graph2HeuristicModel
 from tqdm import tqdm
@@ -52,37 +52,53 @@ def train():
     parser.add_argument('--batch_size', type=int, default=32)
     parser.add_argument('--eval_interval', type=int, default=5)
     parser.add_argument('--learning_rate', type=float, default=3e-4)
+    parser.add_argument('--learning_iters', type=int, default=5000)
     parser.add_argument('--eval_iters', type=int, default=200)
     parser.add_argument('--max_iters', type=int, default=10000)
     parser.add_argument('--device', type=str, default='cuda')
     parser.add_argument('--model_save', type=str, default='trainedModel/Checkpoint')
+    parser.add_argument('--continue_from_previous', type=bool, default=True)
+    parser.add_argument('--previous_iter', type=str, default='465')
+
+
     args = parser.parse_args()
     print(torch.cuda.is_available())
     #
     print('loading train dataset')
-    traindataset = dataloader(args.map_size, 'dataset/16wind/train/') #
+    traindataset = dataset_builder(args.map_size, 'dataset/16risk/train/') #
     trainDataLoader = DataLoader(traindataset, batch_size=args.batch_size, shuffle=True)
     #
     print('loading val dataset')
-    valdataset = dataloader(args.map_size, 'dataset/16wind/val/') 
+    valdataset = dataset_builder(args.map_size, 'dataset/16risk/val/')
     valDataLoader = DataLoader(valdataset, batch_size=args.batch_size, shuffle=True)
-    model = Graph2HeuristicModel(args)
+    if args.continue_from_previous:
+        print('load from previous')
+        model = Graph2HeuristicModel(args)
+        filename = args.model_save + '_' + str(args.map_size) + '_' + args.previous_iter + '.pth'
+        model.load_state_dict(torch.load(filename))
+        start = int(args.previous_iter)+1
+    else:
+        model = Graph2HeuristicModel(args)
+        start = 0
     m = model.to(args.device)
+    m.train()
     optimizer = torch.optim.AdamW(m.parameters(), lr=args.learning_rate)
     lowest = 10000
-    for iter in tqdm(range(args.max_iters)):
-        if iter % args.eval_interval == 0:
+    for i in tqdm(range(start, args.max_iters)):
+        if i % args.eval_interval == 0:
             losses = estimate_loss(m, args.eval_iters, trainDataLoader, valDataLoader)
-            print(f"step{iter}: train loss {losses['train']:.4f}. val loss {losses['val']:.4f}")
+            print(f"step{i}: train loss {losses['train']:.4f}. val loss {losses['val']:.4f}")
             if losses['val'] < lowest:
                 lowest = losses['val']
-                filename = args.model_save + '_' + str(args.map_size) + '_' + str(iter) + '.pth'
+                filename = args.model_save + '_' + str(args.map_size) + '_' + str(i) + '.pth'
                 print('newlow found, saving the model: ', filename)
                 torch.save(m.state_dict(), filename)
-                filename = args.model_save + '_' + str(args.map_size) + '_' + str(iter) + '_entire.pth'
+                filename = args.model_save + '_' + str(args.map_size) + '_' + str(i) + '_entire.pth'
                 torch.save(m, filename)
         else:
-            for riskmap, start, dest, hmap in trainDataLoader:
+            data_iterator = iter(trainDataLoader)
+            for _ in range(args.learning_iters):
+                riskmap, start, dest, hmap = next(data_iterator)
                 riskmap = riskmap.to(device)
                 start = start.to(device)
                 dest = dest.to(device)

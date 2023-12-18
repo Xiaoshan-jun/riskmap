@@ -21,7 +21,7 @@ class CustomDataset(Dataset):
     def __getitem__(self, idx):
         return self.data[idx], self.start[idx], self.des[idx], self.labels[idx]
 
-def dataloader(size, split):
+def dataset_builder(size, split):
     t0 = time.time()
     print("start loading dataset")
     mapdirectory = split + 'map/'
@@ -33,13 +33,13 @@ def dataloader(size, split):
     targets = []
     count = 1
     for mapfilename in tqdm(mapfilenames):
-        count += 1
-        if count > 2:
-            break
+        # count += 1
+        # if count > 2:
+        #     break
         print(mapfilename)
-        heufilenames = [f for f in os.listdir(Hdirectory) if f.startswith(mapfilename[:-4])]
+        heufilenames = [f for f in os.listdir(Hdirectory) if f.startswith(mapfilename[:-4]+'_')]
         print(heufilenames)
-        if heufilenames:
+        if heufilenames and len(heufilenames) == 1:
             heufilename = heufilenames[0]
         datapoints = np.load(Hdirectory + heufilename)
         for i in range(int(len(datapoints)/3)):

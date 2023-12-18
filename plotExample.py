@@ -52,10 +52,10 @@ if test_type:
     m = model.to(args.device)
     # Don't forget to set the model to evaluation mode if you're doing inference
     m.eval()
-safec = 0.9
+safec = 0.8
 dim = 16
 
-evaluatedataset = dataloader(dim, 'dataset/16risk/val/') #
+evaluatedataset = dataloader(dim, 'dataset/16wind/test/') #
 evaluateDataLoader = DataLoader(evaluatedataset, batch_size=1, shuffle=True)
 learnedexplored = 0
 manhattanexplored = 0
@@ -67,7 +67,7 @@ noresult = 0
 learnedtime = 0
 manhattantime = 0
 evaluateDataLoader = iter(evaluateDataLoader)
-for i in range(10):
+for i in range(200):
     riskmap, start, dest, hmap = next(evaluateDataLoader)
     start2 = start.to(args.device)
     riskmap2 = riskmap.to(args.device)
@@ -108,25 +108,30 @@ for i in range(10):
     cmap.set_under('white')  # values below the lowest in the colormap are white
     cmap.set_over('black')   # values above the highest in the colormap are black
     fig, ax = plt.subplots()
-    cax = ax.imshow(UAVmap, cmap=cmap, vmin=0, vmax=0.1)
+    cax = ax.imshow(UAVmap, cmap=cmap, vmin=0, vmax=0.2)
         # Plotting the matrix with colors defined by the numbers
     #plt.imshow(UAVmap, cmap='gray_r')
     fig.colorbar(cax) # Adds a color bar to match the color scale
-    plt.title('random map case example1')
+    plt.title('wind flow map case example2')
     plt.xticks(np.arange(UAVmap.shape[1]), np.arange(UAVmap.shape[1]))
     plt.yticks(np.arange(UAVmap.shape[0]), np.arange(UAVmap.shape[0]))
+    hd_image_path = 'figure/randommapexample' + str(i) + '.png'
+    fig.savefig(hd_image_path, dpi=900)
+    #plot path
     ax.add_patch(plt.Rectangle((xI[1]-0.5, xI[0]-0.5), 1, 1, edgecolor='yellow', facecolor='none', lw=2))
     for (x, y, s) in path:
         ax.add_patch(plt.Rectangle((y-0.5, x-0.5), 1, 1, edgecolor='red', facecolor='none', lw=2))
     ax.add_patch(plt.Rectangle((xG[1]-0.5, xG[0]-0.5), 1, 1, edgecolor='green', facecolor='none', lw=2))
     matrix = np.zeros((dim,dim))
+    #plot explored
     for (x, y, s) in explored:
         matrix[x][y] += 1
     for x in range(dim):
         for y in range(dim):
             if matrix[x][y] > 0:
                 ax.text(y, x, f'{int(matrix[x, y])}', ha='center', va='center', color='blue')
-    hd_image_path = 'figure/randommapexample.png'
+    plt.title('path founded by A* with learned heuristic')            
+    hd_image_path = 'figure/randommapexampleleanred'+ str(i) + '.png'
     fig.savefig(hd_image_path, dpi=900)
     plt.show()
     if explored:
@@ -136,6 +141,35 @@ for i in range(10):
     
     t0 = time.time()
     actionList2, path2, nodeList2, count2, explored2 = aStarSearch(xI, xG, UAVmap, safec)
+    cmap = plt.cm.gray_r
+    cmap.set_under('white')  # values below the lowest in the colormap are white
+    cmap.set_over('black')   # values above the highest in the colormap are black
+    fig, ax = plt.subplots()
+    cax = ax.imshow(UAVmap, cmap=cmap, vmin=0, vmax=0.2)
+        # Plotting the matrix with colors defined by the numbers
+    #plt.imshow(UAVmap, cmap='gray_r')
+    fig.colorbar(cax) # Adds a color bar to match the color scale
+    plt.xticks(np.arange(UAVmap.shape[1]), np.arange(UAVmap.shape[1]))
+    plt.yticks(np.arange(UAVmap.shape[0]), np.arange(UAVmap.shape[0]))
+    hd_image_path = 'figure/randommapexample.png'
+    fig.savefig(hd_image_path, dpi=900)
+    #plot path
+    ax.add_patch(plt.Rectangle((xI[1]-0.5, xI[0]-0.5), 1, 1, edgecolor='yellow', facecolor='none', lw=2))
+    for (x, y, s) in path2:
+        ax.add_patch(plt.Rectangle((y-0.5, x-0.5), 1, 1, edgecolor='red', facecolor='none', lw=2))
+    ax.add_patch(plt.Rectangle((xG[1]-0.5, xG[0]-0.5), 1, 1, edgecolor='green', facecolor='none', lw=2))
+    matrix = np.zeros((dim,dim))
+    #plot explored
+    for (x, y, s) in explored2:
+        matrix[x][y] += 1
+    for x in range(dim):
+        for y in range(dim):
+            if matrix[x][y] > 0:
+                ax.text(y, x, f'{int(matrix[x, y])}', ha='center', va='center', color='blue')
+    plt.title('path founded by A* with manhattan heuristic')            
+    hd_image_path = 'figure/randommapexampleManhattan'+ str(i) + '.png'
+    fig.savefig(hd_image_path, dpi=900)
+    plt.show()
     if explored2:
         manhattanexplored += len(explored2)
     if actionList2:
