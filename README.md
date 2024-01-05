@@ -1,4 +1,4 @@
-# LSTM-Gan for drone trajectory predicting
+# A* Heuristic generating with transformer 
 
 In this repository, we release models from the papers
 
