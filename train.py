@@ -3,6 +3,7 @@ from include.dataloader import dataset_builder
 from torch.utils.data import DataLoader
 from include.model import Graph2HeuristicModel
 from tqdm import tqdm
+import numpy as np
 import torch
 
 torch.manual_seed(1337)
@@ -18,7 +19,7 @@ n_head = 6
 n_layer = 6
 dropout = 0.2
 
-def estimate_loss(model, eval_iters, trainDataLoader, valDataLoader):
+def estimate_loss(model, eval_iters, trainDataLoader, valDataLoader, args):
     out = {}
     model.eval()
     for split in ['train', 'val']:
@@ -28,12 +29,46 @@ def estimate_loss(model, eval_iters, trainDataLoader, valDataLoader):
         else:
             data_iterator = iter(valDataLoader)
         for k in range(eval_iters):
-            riskmap, start, dest, hmap = next(data_iterator)
+            graphfilenames, labelsfilenames, indexs = next(data_iterator)
+            riskmap = []
+            start = []
+            destination = []
+            hmap = []
+            # load risk map
+            for i in range(len(graphfilenames)):
+                graphfilename = graphfilenames[i]
+                rm = np.load(graphfilename)
+                rm = np.array(rm).reshape(-1)
+                riskmap.append(rm)
+                # load labels
+                labelsfilename = labelsfilenames[i]
+                datapoints = np.load(labelsfilename)
+                index = indexs[i]
+                # load labels: start
+                sta = datapoints[f'data_{index}_start']
+                sta = sta[0] * args.map_size + sta[1]
+                start.append(sta)
+                # load labels: destination
+                des = datapoints[f'data_{index}_destination']
+                des = des[0] * args.map_size + des[1]
+                destination.append(des)
+                # load labels: expert heurisic
+                hm = datapoints[f'data_{index}_Hvalue']
+                hm = np.array(hm).reshape(-1)
+                hmap.append(hm)
+            riskmap = np.array(riskmap)
+            riskmap = torch.tensor(riskmap, dtype=torch.float32)
             riskmap = riskmap.to(device)
+            start = np.array(start)
+            start = torch.tensor(start, dtype=torch.int)
             start = start.to(device)
-            dest = dest.to(device)
+            destination = np.array(destination)
+            destination = torch.tensor(destination, dtype=torch.int)
+            destination = destination.to(device)
+            hmap = np.array(hmap)
+            hmap = torch.tensor(hmap, dtype=torch.float32)
             hmap = hmap.to(device)
-            logits, loss = model(riskmap, start, dest, hmap)
+            logits, loss = model(riskmap, start, destination, hmap)
             losses[k] = loss.item()
         out[split] = losses.mean()
     model.train()
@@ -57,7 +92,7 @@ def train():
     parser.add_argument('--max_iters', type=int, default=10000)
     parser.add_argument('--device', type=str, default='cuda')
     parser.add_argument('--model_save', type=str, default='trainedModel/Checkpoint')
-    parser.add_argument('--continue_from_previous', type=bool, default=True)
+    parser.add_argument('--continue_from_previous', type=bool, default=False)
     parser.add_argument('--previous_iter', type=str, default='465')
 
 
@@ -86,7 +121,7 @@ def train():
     lowest = 10000
     for i in tqdm(range(start, args.max_iters)):
         if i % args.eval_interval == 0:
-            losses = estimate_loss(m, args.eval_iters, trainDataLoader, valDataLoader)
+            losses = estimate_loss(m, args.eval_iters, trainDataLoader, valDataLoader, args)
             print(f"step{i}: train loss {losses['train']:.4f}. val loss {losses['val']:.4f}")
             if losses['val'] < lowest:
                 lowest = losses['val']
@@ -98,12 +133,46 @@ def train():
         else:
             data_iterator = iter(trainDataLoader)
             for _ in range(args.learning_iters):
-                riskmap, start, dest, hmap = next(data_iterator)
+                graphfilenames, labelsfilenames, indexs = next(data_iterator)
+                riskmap = []
+                start = []
+                destination = []
+                hmap = []
+                # load risk map
+                for i in range(len(graphfilenames)):
+                    graphfilename = graphfilenames[i]
+                    rm = np.load(graphfilename)
+                    rm = np.array(rm).reshape(-1)
+                    riskmap.append(rm)
+                    # load labels
+                    labelsfilename = labelsfilenames[i]
+                    datapoints = np.load(labelsfilename)
+                    index = indexs[i]
+                    # load labels: start
+                    sta = datapoints[f'data_{index}_start']
+                    sta = sta[0] * args.map_size + sta[1]
+                    start.append(sta)
+                    # load labels: destination
+                    des = datapoints[f'data_{index}_destination']
+                    des = des[0] * args.map_size + des[1]
+                    destination.append(des)
+                    # load labels: expert heurisic
+                    hm = datapoints[f'data_{index}_Hvalue']
+                    hm = np.array(hm).reshape(-1)
+                    hmap.append(hm)
+                riskmap = np.array(riskmap)
+                riskmap = torch.tensor(riskmap, dtype=torch.float32)
                 riskmap = riskmap.to(device)
+                start = np.array(start)
+                start = torch.tensor(start, dtype=torch.int)
                 start = start.to(device)
-                dest = dest.to(device)
+                destination = np.array(destination)
+                destination = torch.tensor(destination, dtype=torch.int)
+                destination = destination.to(device)
+                hmap = np.array(hmap)
+                hmap = torch.tensor(hmap, dtype=torch.float32)
                 hmap = hmap.to(device)
-                logits, loss = m(riskmap, start, dest, hmap)
+                logits, loss = m(riskmap, start, destination, hmap)
                 optimizer.zero_grad(set_to_none=True)
                 loss.backward()
                 optimizer.step()
