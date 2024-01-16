@@ -37,12 +37,12 @@ python evaluate_model.py
 ## Bibtex
 
 ```
-@inproceedings{xiang2023landing,
-  title={Landing Trajectory Prediction for UAS Based on Generative Adversarial Network},
+@inproceedings{xiang2024learning,
+  title={Learning-accelerated A* Search for Risk-aware Path Planning},
   author={Xiang, Jun and Xie, Junfei and Chen, Jun},
-  booktitle={AIAA SCITECH 2023 Forum},
-  pages={0127},
-  year={2023}
+  booktitle={AIAA SCITECH 2024 Forum},
+  pages={2895},
+  year={2024}
 }
 
 ```
