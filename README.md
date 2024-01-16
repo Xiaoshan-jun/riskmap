@@ -14,8 +14,9 @@ This study aims to enhance the efficiency of solving the Constrained Shortest Pa
 </p>
 
 ## Generator architecture
-![Alt text](https://github.com/Xiaoshan-jun/riskmap/blob/main/figure/input.PNG)
 ![Alt text](https://github.com/Xiaoshan-jun/riskmap/blob/main/figure/good%20figure/input.PNG)
+![Alt text](https://github.com/Xiaoshan-jun/riskmap/blob/main/figure/good%20figure/backbone.PNG)
+
 
 
 train
