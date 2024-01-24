@@ -18,7 +18,19 @@ class CustomDataset(Dataset):
         return len(self.graphfilename)
 
     def __getitem__(self, idx):
-        return self.graphfilename[idx], self.labelsfilename[idx], self.index[idx]
+        graphfilename = self.graphfilename[idx]
+        rm = np.load(graphfilename)
+        rm = np.array(rm).reshape(-1)
+        labelsfilename = self.labelsfilename[idx]
+        datapoints = np.load(labelsfilename)
+        index = self.index[idx]
+        sta = datapoints[f'data_{index}_start']
+        sta = sta[0] * 16 + sta[1]
+        des = datapoints[f'data_{index}_destination']
+        des = des[0] * 16 + des[1]
+        hm = datapoints[f'data_{index}_Hvalue']
+        hm = np.array(hm).reshape(-1)
+        return torch.tensor(rm, dtype=torch.float32), torch.tensor(sta, dtype=torch.int), torch.tensor(des, dtype=torch.int), torch.tensor(hm, dtype=torch.float32)
 
 def dataset_builder(size, split):
     t0 = time.time()

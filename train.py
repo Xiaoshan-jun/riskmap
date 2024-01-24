@@ -1,5 +1,6 @@
 import argparse
-from include.dataloader import dataset_builder
+#from include.dataloader import dataset_builder
+from include.dataloader_large_data import dataset_builder #test 1/18
 from torch.utils.data import DataLoader
 from include.model import Graph2HeuristicModel
 from tqdm import tqdm
@@ -44,6 +45,7 @@ def train():
     parser = argparse.ArgumentParser(description='Train TrajAirNet model')
     parser.add_argument('--map_size', type=int, default= 16) #map is map_size * map_size
     parser.add_argument('--block_size', type=int, default= 16*16) #must equal to map_size**2 #block_size is the number of nodes
+    parser.add_argument('--num_workers', type=int, default=16)  # depends on the cpu
     #model parameter
     parser.add_argument('--n_embd', type=int, default= 864)  #embedded item size
     parser.add_argument('--n_layer', type=int, default=6)
@@ -67,11 +69,11 @@ def train():
     #
     print('loading train dataset')
     traindataset = dataset_builder(args.map_size, 'dataset/16wind/train/') #
-    trainDataLoader = DataLoader(traindataset, batch_size=args.batch_size, shuffle=True)
+    trainDataLoader = DataLoader(traindataset, batch_size=args.batch_size, shuffle=True, num_workers= args.num_workers)
     #
     print('loading val dataset')
     valdataset = dataset_builder(args.map_size, 'dataset/16wind/val/')
-    valDataLoader = DataLoader(valdataset, batch_size=args.batch_size, shuffle=True)
+    valDataLoader = DataLoader(valdataset, batch_size=args.batch_size, shuffle=True, num_workers = args.num_workers)
     if args.continue_from_previous:
         print('load from previous')
         model = Graph2HeuristicModel(args)

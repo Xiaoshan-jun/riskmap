@@ -1,5 +1,5 @@
 import argparse
-from include.dataloader import dataset_builder
+from include.dataloader_large_data import dataset_builder
 from torch.utils.data import DataLoader
 from include.model import Graph2HeuristicModel
 from tqdm import tqdm
@@ -19,6 +19,17 @@ n_head = 6
 n_layer = 6
 dropout = 0.2
 
+def load_data(file, index, label_key, map_size=None, dtype=torch.float32):
+    #help load data
+    data = np.load(file)
+    if label_key:
+        data = data[f'data_{index}_{label_key}']
+        if map_size:
+            data = data[0] * map_size + data[1]
+    return torch.tensor(data.reshape(-1), dtype=dtype)
+def to_device(tensors, device):
+    #help load data
+    return [tensor.to(device) for tensor in tensors]
 def estimate_loss(model, eval_iters, trainDataLoader, valDataLoader, args):
     out = {}
     model.eval()

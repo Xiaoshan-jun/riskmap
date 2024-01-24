@@ -1,4 +1,5 @@
 from torch.utils.data import Dataset
+import torchvision.datasets as datasets
 import os
 import numpy as np
 import ast
@@ -62,12 +63,12 @@ def dataset_builder(size, split):
 
     print("data loading finished, ", "load time: ", time.time() - t0, "number of data: ", len(graph))
     graph = np.array(graph)
-    graph = torch.tensor(graph, dtype=torch.float32)
+    graph = torch.tensor(graph, dtype=torch.float16)
     start = np.array(start)
     start = torch.tensor(start, dtype=torch.int)
     destination = np.array(destination)
     destination = torch.tensor(destination, dtype=torch.int)
     targets = np.array(targets)
-    targets = torch.tensor(targets, dtype=torch.float32)
+    targets = torch.tensor(targets, dtype=torch.float16)
     dataset = CustomDataset(graph, start, destination, targets)
     return dataset
