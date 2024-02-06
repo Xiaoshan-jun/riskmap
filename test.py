@@ -1,5 +1,5 @@
 import argparse
-from include.dataloader import dataloader
+from include.dataloader_large_data import dataset_builder
 from torch.utils.data import DataLoader
 from include.model import Graph2HeuristicModel
 from tqdm import tqdm
@@ -45,7 +45,7 @@ test_type = 1 # 1 for model, 0 for dataset
 args = parser.parse_args()
 
 model = Graph2HeuristicModel(args)
-filename = args.model_save + '_' + str(args.map_size) + '_' + str(420) + '.pth'
+filename = args.model_save + '_' + str(args.map_size) + '_' + str(235) + '.pth'
 # Load the state dict back into the model
 if test_type:
     model.load_state_dict(torch.load(filename))
@@ -55,7 +55,7 @@ if test_type:
 safec = 0.9
 dim = 16
 
-evaluatedataset = dataloader(dim, 'dataset/16risk/val/') #
+evaluatedataset = dataset_builder(dim, 'dataset/16risk/val/') #
 evaluateDataLoader = DataLoader(evaluatedataset, batch_size=1, shuffle=True)
 learnedexplored = 0
 manhattanexplored = 0
