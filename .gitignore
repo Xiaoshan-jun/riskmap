@@ -5,3 +5,5 @@
 *.pyc
 *.pyc
 include/__pycache__/dataloader.cpython-39.pyc
+*.pyc
+include/__pycache__/astarastar.cpython-39.pyc

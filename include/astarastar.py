@@ -72,6 +72,8 @@ def learnedHeuristic(des, hmap, size):
         #print(des)
         #print(hmap[des[0]][des[1]][k])
         return hmap[des[0]][des[1]]
+    elif hmap[des[0]][des[1]] >= -0.5:
+        return 0
     else:
         return 100000
 

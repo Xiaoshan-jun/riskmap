@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Wed Oct 25 13:56:25 2023
-create hueristic value label for risk map
+create hueristic value label for wind map
 @author: jxiang9143
 """
 from include.astarastar import aStarSearch

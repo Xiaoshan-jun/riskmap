@@ -20,7 +20,7 @@ dim = 16
 num_elements = dim * dim
 
 
-for i in tqdm(range(1200, 1999)):
+for i in tqdm(range(0, 1999)):
     #create random risky map
     safeplace = int(0.2 * num_elements)
     lowrisk = int(0.6 * num_elements)
@@ -32,7 +32,7 @@ for i in tqdm(range(1200, 1999)):
     np.random.shuffle(combined_values)     # Shuffle the combined values
     UAVmap = combined_values.reshape(dim, dim)
     #print(UAVmap)
-    mapname = 'dataset/16risk/map/' + str(dim) + '_' + str(i) + '.npy'
+    mapname = 'dataset/16risk_new/map/' + str(dim) + '_' + str(i) + '.npy'
     np.save(mapname, UAVmap)
     grids = []
     datapoints = []
@@ -46,14 +46,14 @@ for i in tqdm(range(1200, 1999)):
         Hvalue = np.zeros((dim, dim))
         for xI in grids:
             if UAVmap[xI[0]][xI[1]] > 0.1:
-                Hvalue[xI[0]][xI[1]] = -1
+                Hvalue[xI[0]][xI[1]] = 100
             else:
                 xI2 = (xI[0], xI[1], 1)
                 actionList, path, nodeList, count, explored = aStarSearch(xI2,xG, UAVmap, safec)
                 if actionList:
                     Hvalue[xI[0]][xI[1]] = manhattanHeuristic(xI, xG)
                 else:
-                    Hvalue[xI[0]][xI[1]] = -1
+                    Hvalue[xI[0]][xI[1]] = 100
         for xI in grids:
             xI = (xI[0], xI[1], 1)
             if manhattanHeuristic(xI, xG) < 10:
@@ -63,7 +63,7 @@ for i in tqdm(range(1200, 1999)):
                 if len(path) > dim:
                     Hvalue2 = Hvalue.copy()
                     for _, node in enumerate(path):
-                        Hvalue2[node[0], node[1]] = 0
+                        Hvalue2[node[0], node[1]] = 0.5
                     data = {}
                     data['start'] = xI
                     data['destination'] = xG
@@ -75,5 +75,5 @@ for i in tqdm(range(1200, 1999)):
     for j, datapoint in enumerate(datapoints):
         for key, array in datapoint.items():
             kwargs[f'data_{j}_{key}'] = array
-    hname = 'dataset/16risk/Hvalue/' + str(dim) + '_' + str(i) + '_' + str(xI) + '_' + str(xG) + '.npz'
+    hname = 'dataset/16risk_new/Hvalue/' + str(dim) + '_' + str(i) + '_' + str(xI) + '_' + str(xG) + '.npz'
     np.savez(hname, **kwargs)

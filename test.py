@@ -52,10 +52,10 @@ if test_type:
     m = model.to(args.device)
     # Don't forget to set the model to evaluation mode if you're doing inference
     m.eval()
-safec = 0.9
+safec = 0.8 #0.9 for risk #0.8 for wind
 dim = 16
 
-evaluatedataset = dataset_builder(dim, 'dataset/16risk/val/') #
+evaluatedataset = dataset_builder(dim, 'dataset/16wind/val/') #
 evaluateDataLoader = DataLoader(evaluatedataset, batch_size=1, shuffle=True)
 learnedexplored = 0
 manhattanexplored = 0
@@ -67,7 +67,7 @@ noresult = 0
 learnedtime = 0
 manhattantime = 0
 evaluateDataLoader = iter(evaluateDataLoader)
-for i in tqdm(range(10000)):
+for i in tqdm(range(100)):
     riskmap, start, dest, hmap = next(evaluateDataLoader)
     start2 = start.to(args.device)
     riskmap2 = riskmap.to(args.device)
@@ -82,13 +82,19 @@ for i in tqdm(range(10000)):
     #-----uncommand if model--------------------
     if test_type:
         logits, loss = model(riskmap2, start2, dest2, hmap2)
+        print('loss:')
+        print(loss)
         logits = logits.to('cpu')
         logits = logits.detach().numpy()[0]
         hmap = logits.reshape(dim, dim)
     #-----------------------------------------
     else:
         hmap = hmap.numpy()[0].reshape(dim, dim)
-    t0 = time.time()
+    hmap2 = hmap2.reshape(dim, dim)
+    print('expert:')
+    print(hmap2)
+    print('generated:')
+    print(hmap)
     #print(logits)
     #if np.sum(hmap == -1) > dim*dim - 10:
         #continue
@@ -99,6 +105,7 @@ for i in tqdm(range(10000)):
     #random pick xI
     xI = (start//dim, start%dim, 1)
     xG = (dest//dim, dest%dim)
+    t0 = time.time()
     # while hmap[xI[0]][xI[1]] == -1:
     #     xI = (np.random.randint(0, dim), np.random.randint(0, dim), 1)
     #     xIindex = xI[0] * dim + xI[1]
@@ -108,6 +115,7 @@ for i in tqdm(range(10000)):
         learnedexplored += len(explored)
     if actionList:
         learneddistance += len(actionList)
+    print('learnedtime: ', round(time.time() - t0, 2))
     learnedtime += time.time() - t0
     
     t0 = time.time()
@@ -127,6 +135,7 @@ for i in tqdm(range(10000)):
         print("something go wrong")
     else:
         noresult += 1
+    print('manhattan time: ', round(time.time() - t0, 2))
     manhattantime += time.time() - t0
 total = learnedwin + manhattanwin + noresult
 print("learnedexplored:", round(learnedexplored/total,2))
